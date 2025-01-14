@@ -18,9 +18,21 @@ struct ContentView: View {
     @FocusState private var isFocused: Bool
     
     let buttonTip = ButtonTip()
+    
+    func setUpTips () {
+        do{
+            try Tips.resetDatastore()
+            Tips.showAllTipsForTesting()
+            try Tips.configure([
+                .displayFrequency(.immediate)
+            ])
+        }catch{
+            print("Error initializing TipKit \(error.localizedDescription)")
+        }
+    }
     //create all the tips into the view
     init() {
-        try? Tips.configure()
+        setUpTips()
     }
     func addEssentialFood(){
         modelContext.insert(Item(title: "Bakery", isCompleted: false))
