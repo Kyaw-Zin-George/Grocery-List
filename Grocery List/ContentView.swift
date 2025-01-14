@@ -12,11 +12,14 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var items : [Item]
     
+    @State private var item : String = ""
+    
+    @FocusState private var isFocused: Bool
     func addEssentialFood(){
-        modelContext.insert(Item(title: "Bakery", isCompleted: true))
+        modelContext.insert(Item(title: "Bakery", isCompleted: false))
         modelContext.insert(Item(title: "Fruits", isCompleted: false))
-        modelContext.insert(Item(title: "Meat", isCompleted: .random()))
-        modelContext.insert(Item(title: "Vegetables", isCompleted: true))
+        modelContext.insert(Item(title: "Meat", isCompleted: false))
+        modelContext.insert(Item(title: "Vegetables", isCompleted: false))
     }
     
     var body: some View {
@@ -39,6 +42,7 @@ struct ContentView: View {
                                 Label("Delete", systemImage: "trash")
                             }
                         }
+                    //marking an item done action
                         .swipeActions(edge: .leading) {
                             Button("Done",systemImage: item.isCompleted  == false  ? "checkmark.circle" : "x.circle"){
                                 item.isCompleted.toggle()
@@ -47,11 +51,7 @@ struct ContentView: View {
                 }
             }
             .navigationTitle("Grocery List")
-            .overlay{
-                if items.isEmpty{
-                    ContentUnavailableView("Empty Cart", systemImage: "cart.circle", description:Text("Add Some Items on the shopping list"))
-                }
-            }
+            //Creating commonest items when doing grocery shopping
             .toolbar{
                 if items.isEmpty{
                     ToolbarItem(placement: .topBarTrailing) {
@@ -62,6 +62,43 @@ struct ContentView: View {
                         }
                     }
                 }
+            }
+            //Empty View Creation
+            .overlay{
+                if items.isEmpty{
+                    ContentUnavailableView("Empty Cart", systemImage: "cart.circle", description:Text("Add Some Items on the shopping list"))
+                }
+            }
+            //Add new Grocery to list
+            .safeAreaInset(edge: .bottom) {
+                VStack(spacing: 12){
+                    //Type new Grocery list
+                    TextField("", text: $item)
+                        .textFieldStyle(.plain)
+                        .padding(12)
+                        .background(.tertiary)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .font(.title.weight(.light))
+                        .focused($isFocused)
+                    
+                    //Save Button
+                    Button{
+                        guard !item.isEmpty else { return }
+                        let newItem = Item(title: item, isCompleted: false)
+                        modelContext.insert(newItem)
+                        item = ""
+                        isFocused = false
+                    }label: {
+                        Text("Save")
+                            .font(.title2.weight(.medium))
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .buttonBorderShape(.roundedRectangle)
+                    .controlSize(.extraLarge)
+                }
+                .padding()
+                .background(.bar)
             }
         }
     }
